@@ -1,22 +1,28 @@
 
 const gameBoard = (() => {
-  let _board = ["", "", "", "", "", "", "", "", ""];
+  let _board = [
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""]
+  ];
 
-  const setTile = (index, sign) => {
-    _board[index] = sign;
+  const getTile = (row, column) => {
+    return _board[row][column];
   }
 
-  const getTile = (index) => {
-    return _board[index];
+  const setTile = (row, column, sign) => {
+    _board[row][column] = sign;
   }
 
   const reset = () => {
-    for (let i = 0; i < _board.length; i++) {
-      _board[i] = "";
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        _board[i][j] = "";
+      }
     }
   }
 
-  return {setTile, getTile, reset};
+  return { getTile, setTile, reset };
 })();
 
 const Player = (sign) => {
@@ -24,143 +30,143 @@ const Player = (sign) => {
 
   const getSign = () => {
     return sign;
-  };
-
-  return {getSign};
+  }
+  
+  return { getSign };
 };
 
-const gameController = (() => {
+const gameControl = (() => {
   let playerX = Player('X');
   let playerO = Player('O');
-  let round = 1;
-  let endRound = false;
-
-  const playRound = (tileIndex) => {
-    gameBoard.setTile(tileIndex, getCurrentPlayerSign());
-
+  let _round = 1;
+  let endGame = false;
+  
+  const playRound = (place) => {
+    gameBoard.setTile(place.dataset.row, place.dataset.column, getCurrentSign());
+    
     if (checkWinner()) {
-      displayController.setResultMessage(`${getCurrentPlayerSign()}`);
-      endRound = true;
+      displayControl.setFinalMessage(`${getCurrentSign()}`);
+      endGame = true;
+      return;
+    }
+    
+    if (_round > 8) {
+      displayControl.setFinalMessage('draw');
+      endGame = true;
       return;
     }
 
-    if (round === 9) {
-      displayController.setResultMessage('draw');
-      endRound = true;
-      return;
-    }
-
-    round++;
-    displayController.setMessage(`Player ${getCurrentPlayerSign()}'s turn`);
+    _round++;
+    displayControl.setMessage(`player ${getCurrentSign()}'s turn`);
   };
 
-  const getCurrentPlayerSign = () => {
-    if (round % 2 === 1) {
+  const getCurrentSign = () => {
+    if (_round % 2 === 1) {
       return playerX.getSign();
     } else {
       return playerO.getSign();
     }
-  };
+  }
 
   const checkWinner = () => {
-    /* [0 1 2]
-       [3 4 5]
-       [6 7 8] */
-
     //check rows
-    for (let i = 0; i < 3; i++) {
-      let row = [];
-      for (let j = i * 3; j < i * 3 + 3; j++) {
-        row.push(gameBoard.getTile(j));
+    for (let i=0; i<3; i++) {
+      let row=[];
+      for (let j=0; j<3; j++) {
+        row.push(gameBoard.getTile(i, j));
       }
-      console.log(`row ${i}: ${row}`);
 
-      if ((row.every(tile => tile === 'X')) || (row.every(tile => tile === 'O'))) {
+      if (row.every(tile => tile === 'X') || (row.every(tile => tile === 'O'))) {
         return true;
-      } 
-    }
-    
-    //check columns
-    for (let i = 0; i < 3; i++) {
-      let column = [];
-      for (let j = 0; j < 3; j++) {
-        column.push(gameBoard.getTile(j * 3 + i));
       }
-      console.log(`column ${i}: ${column}`);
+    }
 
-      if ((column.every(tile => tile === 'X')) || (column.every(tile => tile === 'O'))) {
+    //check columns
+    for (let i=0; i<3; i++) {
+      let column=[];
+      for (let j=0; j<3; j++) {
+        column.push(gameBoard.getTile(j, i));
+      }
+
+      if (column.every(tile => tile === 'X') || (column.every(tile => tile === 'O'))) {
         return true;
       }
     }
 
     //check diagonals
-    let diagonalOne = [gameBoard.getTile(0), gameBoard.getTile(4), gameBoard.getTile(8)];
-    let diagonalTwo = [gameBoard.getTile(2), gameBoard.getTile(4), gameBoard.getTile(6)];
+    let diagonal1 = [gameBoard.getTile(0, 0), gameBoard.getTile(1,1), gameBoard.getTile(2,2)];
+    let diagonal2 = [gameBoard.getTile(0,2), gameBoard.getTile(1,1), gameBoard.getTile(2,0)];
 
-    if ((diagonalOne.every(tile => tile === 'X')) || (diagonalOne.every(tile => tile === 'O'))) {
+    if (diagonal1.every(tile => tile === 'X') || diagonal1.every(tile => tile === 'O')) {
       return true;
-    } 
-
-    if ((diagonalTwo.every(tile => tile === 'X')) || (diagonalTwo.every(tile => tile === 'O'))) {
+    }
+    if (diagonal2.every(tile => tile === 'X') || diagonal2.every(tile => tile === 'O')) {
       return true;
     }
 
     return false;
-
-  }
-
-  const isOver = () => {
-    return endRound;
-  }
+  };
 
   const reset = () => {
-    round = 1;
-    endRound = false;
+    _round = 1;
+    endGame = false;
+    displayControl.setMessage("press START to begin");
   }
 
-  return {playRound, reset, isOver};
-
+  const checkIfOver = () => endGame;
+  
+  return { reset, checkIfOver, playRound };
 })();
 
-const displayController = (() => {
+const displayControl = (() => {
   let tile = document.querySelectorAll('.tile');
-  let messageDiv = document.querySelector('#message');
-  let resetButton = document.querySelector('#reset');
-
-  tile.forEach((button) => button.addEventListener('click', (e) => {
-    if (gameController.isOver() || button.textContent !== "") return;
-    
-    gameController.playRound(button.getAttribute('id'));
-    updateGameBoard();
-    
+  let message = document.querySelector('#message');
+  let reset = document.querySelector('#reset');
+  
+  tile.forEach(place => place.addEventListener('click', (e) => {
+    if (gameControl.checkIfOver() || e.target.textContent !== "") return;
+    gameControl.playRound(place);
+    updateBoard();
   }));
-
-  resetButton.addEventListener('click', (e) => {
+  
+  reset.addEventListener('click', (e) => {
     gameBoard.reset();
-    gameController.reset();
-    updateGameBoard();
-    setMessage("Player X's turn");
-  })
+    gameControl.reset();
+    updateBoard();
+  });
 
-  const updateGameBoard = () => {
-    for (let i = 0; i < tile.length; i++) {
-      tile[i].textContent = gameBoard.getTile(i);
-    }
-  };
-
-  const setMessage = (message) => {
-    messageDiv.textContent = message;
-  };
-
-  const setResultMessage = (winner) => {
-    if (winner === "draw") {
-      setMessage("DRAW");
-    } else {
-      setMessage(`${winner} is the winner`);
+  const updateBoard = () => {
+    for (let i = 0; i < 9; i++) {
+      let token = gameBoard.getTile(tile[i].dataset.row, tile[i].dataset.column);
+      if (token) {
+        displayToken(token, i);
+      } else {
+        tile[i].innerHTML = "";
+      }
     }
   }
 
-  return {setMessage, setResultMessage};
-  
-  
+  const displayToken = (token, numToken) => {
+    if (token === "X") {
+      tile[numToken].innerHTML = "<img src='images/x-icon.png' alt='X tile'>";
+    } else {
+      tile[numToken].innerHTML = "<img src='images/o-icon.png' alt='O tile'>";
+    }
+  }
+
+  const setMessage = (msg) => {
+    message.textContent = msg;
+  }
+
+  const setFinalMessage = (winner) => {
+    if (winner === 'draw') {
+      message.textContent = "it's a draw";
+      console.log('???');
+    } else {
+      message.textContent = `player ${winner} won`;
+    }
+  }
+
+  return { setMessage, setFinalMessage };
+
 })();

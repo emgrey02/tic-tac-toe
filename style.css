@@ -1,11 +1,36 @@
 body {
   margin: 0;
   box-sizing: border-box;
+  background: rgb(136, 83, 136);
+}
+
+header {
+  height: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 header h1 {
+  width: 200px;
   text-align: center;
-  margin-bottom: 100px;
+  background: rgba(246, 255, 122, 0.562);
+  padding: 30px;
+  border-radius: 1rem;
+  border: solid 5px black;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+button {
+  font-size: 20px;
+  padding: 5px;
+  width: min-content;
+  margin: 10px;
 }
 
 #game-board {
@@ -16,18 +41,19 @@ header h1 {
 }
 
 #message {
+  background-color: rgba(255, 255, 255, 0.644);
   margin: 40px;
+  padding: 20px;
+  border-radius: 1rem;
+  border: solid 3px black;
   font-size: 24px;
 }
 
-button {
-  font-size: 20px;
-}
-
 .grid-container {
+  background: rgba(255, 255, 255, 0.644);
   display: grid;
-  grid-template-columns: repeat(3, 200px);
-  grid-template-rows: repeat(3, 200px);
+  grid-template-columns: repeat(3, 150px);
+  grid-template-rows: repeat(3, 150px);
   border: 2px solid black;
   margin: auto;
 }
@@ -42,4 +68,10 @@ button {
 
 .tile:hover {
   background-color: lightblue;
+}
+
+img {
+  border-radius: 100%;
+  border: 3px dotted rgba(233, 170, 186, 0.966);
+  background: rgba(97, 52, 60, 0.685);
 }
