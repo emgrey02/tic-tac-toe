@@ -38,33 +38,42 @@ const Player = (sign) => {
 const gameControl = (() => {
   let playerX = Player('X');
   let playerO = Player('O');
-  let _round = 1;
+  let round = 1;
   let endGame = false;
   
   const playRound = (place) => {
     gameBoard.setTile(place.dataset.row, place.dataset.column, getCurrentSign());
     
     if (checkWinner()) {
-      displayControl.setFinalMessage(`${getCurrentSign()}`);
+      displayControl.setFinalMessage(`${getCurrentPlayer()}`);
       endGame = true;
       return;
     }
     
-    if (_round > 8) {
+    if (round > 8) {
       displayControl.setFinalMessage('draw');
       endGame = true;
       return;
     }
-
-    _round++;
-    displayControl.setMessage(`player ${getCurrentSign()}'s turn`);
+    
+    round++;
+    displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
   };
 
   const getCurrentSign = () => {
-    if (_round % 2 === 1) {
+    if (round % 2 === 1) {
       return playerX.getSign();
     } else {
       return playerO.getSign();
+    }
+  }
+
+  const getCurrentPlayer = () => {
+    let playerArray = displayControl.getPlayerNames();
+    if (round % 2 === 1) {
+      return playerArray[0];
+    } else {
+      return playerArray[1];
     }
   }
 
@@ -108,23 +117,63 @@ const gameControl = (() => {
   };
 
   const reset = () => {
-    _round = 1;
+    round = 1;
     endGame = false;
-    displayControl.setMessage("press START to begin");
+    displayControl.setMessage(`${getCurrentPlayer()} starts!!`);
   }
 
   const checkIfOver = () => endGame;
   
-  return { reset, checkIfOver, playRound };
+  return { reset, checkIfOver, playRound, getCurrentPlayer };
 })();
 
 const displayControl = (() => {
   let tile = document.querySelectorAll('.tile');
   let message = document.querySelector('#message');
   let reset = document.querySelector('#reset');
+  let start = document.querySelector('#start');
+  let form = document.querySelector('form');
+  let playerForm = document.querySelector('.player-form');
+  let submit = document.querySelector('#submit');
+  let board = document.querySelector('#game-board');
+
+  
+  const fadeIn = (element) => {
+    element.style.transition = "opacity 1.8s ease-out, left 1s ease-out";
+    element.style.opacity = 1;
+    element.style.left = 0;
+    element.style.zIndex = 99999999;
+  }
+  
+  const fadeOut = (element) => {
+    element.style.transition = "opacity 0.5s ease-in, left 1s ease-in";
+    element.style.opacity = 0;
+    element.style.left = "-200%";
+  }
+
+  const getPlayerNames = () => {
+    return [form.elements[0].value, form.elements[1].value];
+  };
+
+  window.addEventListener('load', fadeIn(board));
+  
+  start.addEventListener('click', () => {
+    fadeOut(board);
+    fadeIn(playerForm);
+  });
+  
+  submit.addEventListener('click', (e) => {
+    e.preventDefault();
+    fadeOut(playerForm);
+    setTimeout(fadeIn(board), 1000);
+    gameBoard.reset();
+    gameControl.reset();
+    updateBoard();
+    setMessage(`${gameControl.getCurrentPlayer()} starts!`);
+  });
   
   tile.forEach(place => place.addEventListener('click', (e) => {
-    if (gameControl.checkIfOver() || e.target.textContent !== "") return;
+    if (gameControl.checkIfOver() || e.target.localName == "img" || e.target.innerHTML !== "") return;
     gameControl.playRound(place);
     updateBoard();
   }));
@@ -161,12 +210,11 @@ const displayControl = (() => {
   const setFinalMessage = (winner) => {
     if (winner === 'draw') {
       message.textContent = "it's a draw";
-      console.log('???');
     } else {
-      message.textContent = `player ${winner} won`;
+      message.textContent = `${winner} wins!`;
     }
   }
 
-  return { setMessage, setFinalMessage };
+  return { setMessage, setFinalMessage, getPlayerNames };
 
 })();

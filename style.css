@@ -21,7 +21,7 @@ header h1 {
   border: solid 5px black;
 }
 
-.buttons {
+header .buttons {
   display: flex;
   justify-content: space-around;
 }
@@ -33,7 +33,48 @@ button {
   margin: 10px;
 }
 
+main {
+  width: 100%;
+  height: 100%;
+}
+
+.player-form {
+  opacity: 0;
+  position: absolute;
+  left: -200%;
+  right: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.player-form form {
+  margin: 100px;
+  background: rgba(255, 255, 255, 0.644);
+  padding: 30px;
+  border-radius: 1rem;
+}
+
+.player-form form label {
+  line-height: 3;
+}
+
+.player-form form input {
+  margin-bottom: 30px;
+  line-height: 2;
+}
+
 #game-board {
+  opacity: 0;
+  position: relative;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  left: -200%;
+  right: 0;
+  text-align: center;
   display: flex;
   flex-direction: column-reverse;
   justify-content: center;
