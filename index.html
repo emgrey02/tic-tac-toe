@@ -17,19 +17,31 @@
     </div>
   </header>
   
-  
-
   <main>
 
+    <div class="game-choice">
+      <button id="computer">play against computer</button>
+      <button id="player">play against a human you provide</button>
+    </div>
+
+    <div class="computer-form">
+      <form class="computer">
+        <label for="player">player name:</label><br>
+        <input type="text" id="player" name="player"><br>
+
+        <input class="submit" type="submit" value="SUBMIT">
+      </form>
+    </div>
+
     <div class="player-form">
-      <form>
+      <form class="multiplayer">
         <label for="player1">player 1 name:</label><br>
         <input type="text" id="player1" name="player1"><br>
 
         <label for="player2">player 2 name:</label><br>
         <input type="text" id="player2" name="player2"><br>
 
-        <input id="submit" type="submit" value="SUBMIT">
+        <input class="submit" type="submit" value="SUBMIT">
       </form>
     </div>
     

@@ -43,7 +43,33 @@ const gameControl = (() => {
   
   const playRound = (place) => {
     gameBoard.setTile(place.dataset.row, place.dataset.column, getCurrentSign());
-    
+    finishRound();
+  };
+  
+  const playComputerRound = () => {
+    let optionArray = []
+    for (let i=0; i<3; i++) {
+      for (let j=0; j<3; j++) {
+        if (gameBoard.getTile(i,j) === "") {
+          optionArray.push([i,j]);
+        }
+      }
+    }
+    let index = 0;
+    if (optionArray.length > 1) {
+      index = Math.floor(Math.random() * (optionArray.length - 1));
+    } else if (optionArray.length === 1) {
+      index = Math.floor(Math.random() * 1);
+    } else {
+      finishRound();
+      return;
+    }
+    gameBoard.setTile(optionArray[index][0], optionArray[index][1], getCurrentSign());
+    displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
+    finishRound();
+  };
+  
+  const finishRound = () => {
     if (checkWinner()) {
       displayControl.setFinalMessage(`${getCurrentPlayer()}`);
       endGame = true;
@@ -58,8 +84,8 @@ const gameControl = (() => {
     
     round++;
     displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
-  };
-
+  }
+  
   const getCurrentSign = () => {
     if (round % 2 === 1) {
       return playerX.getSign();
@@ -124,7 +150,7 @@ const gameControl = (() => {
 
   const checkIfOver = () => endGame;
   
-  return { reset, checkIfOver, playRound, getCurrentPlayer };
+  return { reset, checkIfOver, playRound, playComputerRound, getCurrentPlayer, getCurrentSign };
 })();
 
 const displayControl = (() => {
@@ -132,10 +158,16 @@ const displayControl = (() => {
   let message = document.querySelector('#message');
   let reset = document.querySelector('#reset');
   let start = document.querySelector('#start');
-  let form = document.querySelector('form');
-  let playerForm = document.querySelector('.player-form');
-  let submit = document.querySelector('#submit');
+  let submit = document.querySelectorAll('.submit');
   let board = document.querySelector('#game-board');
+  let gameChoice = document.querySelector('.game-choice');
+  let computerButton = document.querySelector('#computer');
+  let playerButton = document.querySelector('#player');
+  let computer = document.querySelector('.computer');
+  let multiplayer = document.querySelector('.multiplayer');
+  let computerForm = document.querySelector('.computer-form');
+  let playerForm = document.querySelector('.player-form');
+  let computerMode = false;
 
   
   const fadeIn = (element) => {
@@ -149,32 +181,56 @@ const displayControl = (() => {
     element.style.transition = "opacity 0.5s ease-in, left 1s ease-in";
     element.style.opacity = 0;
     element.style.left = "-200%";
+    element.style.zIndex = 0;
   }
 
   const getPlayerNames = () => {
-    return [form.elements[0].value, form.elements[1].value];
+    if (!computerMode) {
+      return [multiplayer.elements[0].value, multiplayer.elements[1].value];
+    } else {
+      return [computer.elements[0].value, 'computer'];
+    }
   };
-
-  window.addEventListener('load', fadeIn(board));
   
   start.addEventListener('click', () => {
     fadeOut(board);
-    fadeIn(playerForm);
+    fadeIn(gameChoice);
   });
+
+  computerButton.addEventListener('click', () => {
+    fadeOut(gameChoice);
+    fadeIn(computerForm);
+  })
+
+  playerButton.addEventListener('click', () => {
+    fadeOut(gameChoice);
+    fadeIn(playerForm);
+  })
   
-  submit.addEventListener('click', (e) => {
+  submit.forEach(button => button.addEventListener('click', (e) => {
     e.preventDefault();
-    fadeOut(playerForm);
+
+    if (button.form.className === 'multiplayer') {
+      computerMode = false;
+      fadeOut(playerForm);
+    } else {
+      computerMode = true;
+      fadeOut(computerForm);
+    }
     setTimeout(fadeIn(board), 1000);
     gameBoard.reset();
     gameControl.reset();
     updateBoard();
     setMessage(`${gameControl.getCurrentPlayer()} starts!`);
-  });
+  }));
   
   tile.forEach(place => place.addEventListener('click', (e) => {
     if (gameControl.checkIfOver() || e.target.localName == "img" || e.target.innerHTML !== "") return;
     gameControl.playRound(place);
+
+    if (computerMode) {
+      gameControl.playComputerRound();
+    }
     updateBoard();
   }));
   
@@ -188,7 +244,15 @@ const displayControl = (() => {
     for (let i = 0; i < 9; i++) {
       let token = gameBoard.getTile(tile[i].dataset.row, tile[i].dataset.column);
       if (token) {
-        displayToken(token, i);
+        if (computerMode) {
+          if (token === 'O') {
+            setTimeout(function() {displayToken(token, i);}, 500);
+          } else {
+            displayToken(token, i);
+          }
+        } else {
+          displayToken(token, i);
+        }
       } else {
         tile[i].innerHTML = "";
       }
