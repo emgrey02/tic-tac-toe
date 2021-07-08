@@ -46,7 +46,7 @@ const gameControl = (() => {
     finishRound();
   };
   
-  const playComputerRound = () => {
+  const playEasyComputerRound = () => {
     let optionArray = []
     for (let i=0; i<3; i++) {
       for (let j=0; j<3; j++) {
@@ -55,6 +55,7 @@ const gameControl = (() => {
         }
       }
     }
+    let options = optionArray.length;
     let index = 0;
     if (optionArray.length > 1) {
       index = Math.floor(Math.random() * (optionArray.length - 1));
@@ -150,7 +151,7 @@ const gameControl = (() => {
 
   const checkIfOver = () => endGame;
   
-  return { reset, checkIfOver, playRound, playComputerRound, getCurrentPlayer, getCurrentSign };
+  return { reset, checkIfOver, playRound, playEasyComputerRound, getCurrentPlayer, getCurrentSign };
 })();
 
 const displayControl = (() => {
@@ -167,31 +168,39 @@ const displayControl = (() => {
   let multiplayer = document.querySelector('.multiplayer');
   let computerForm = document.querySelector('.computer-form');
   let playerForm = document.querySelector('.player-form');
-  let computerMode = false;
+  let easy = document.querySelector('#easy');
+  let hard = document.querySelector('#hard');
+  let computerDifficulty = document.querySelector('.computer-difficulty');
+  let computerEasyMode = false;
+  let computerHardMode = false;
 
-  
   const fadeIn = (element) => {
-    element.style.transition = "opacity 1.8s ease-out, left 1s ease-out";
+    element.style.transition = "opacity 1.8s ease-out";
     element.style.opacity = 1;
-    element.style.left = 0;
     element.style.zIndex = 99999999;
   }
   
   const fadeOut = (element) => {
-    element.style.transition = "opacity 0.5s ease-in, left 1s ease-in";
+    element.style.transition = "opacity 0.3s linear";
     element.style.opacity = 0;
-    element.style.left = "-200%";
     element.style.zIndex = 0;
   }
-
+  
   const getPlayerNames = () => {
-    if (!computerMode) {
-      return [multiplayer.elements[0].value, multiplayer.elements[1].value];
-    } else {
+    if (computerEasyMode || computerHardMode) {
       return [computer.elements[0].value, 'computer'];
+    } else {
+      return [multiplayer.elements[0].value, multiplayer.elements[1].value];
     }
   };
   
+  const setUpBoard = () => {
+    gameBoard.reset();
+    gameControl.reset();
+    updateBoard();
+    setMessage(`${gameControl.getCurrentPlayer()} starts!`);
+  }
+
   start.addEventListener('click', () => {
     fadeOut(board);
     fadeIn(gameChoice);
@@ -207,29 +216,45 @@ const displayControl = (() => {
     fadeIn(playerForm);
   })
   
+  easy.addEventListener('click', () => {
+    computerEasyMode = true;
+    fadeOut(computerDifficulty);
+    setTimeout(fadeIn(board), 1000);
+    setUpBoard();
+  })
+
+  
   submit.forEach(button => button.addEventListener('click', (e) => {
     e.preventDefault();
-
+    
     if (button.form.className === 'multiplayer') {
-      computerMode = false;
+      computerEasyMode = false;
+      computerHardMode = false;
       fadeOut(playerForm);
+      setTimeout(fadeIn(board), 1000);
+      setUpBoard();
     } else {
-      computerMode = true;
       fadeOut(computerForm);
+      fadeIn(computerDifficulty); 
     }
-    setTimeout(fadeIn(board), 1000);
-    gameBoard.reset();
-    gameControl.reset();
-    updateBoard();
-    setMessage(`${gameControl.getCurrentPlayer()} starts!`);
+    
   }));
   
   tile.forEach(place => place.addEventListener('click', (e) => {
     if (gameControl.checkIfOver() || e.target.localName == "img" || e.target.innerHTML !== "") return;
+    
     gameControl.playRound(place);
 
-    if (computerMode) {
-      gameControl.playComputerRound();
+    if (computerEasyMode && !(gameControl.checkIfOver())) {
+      setTimeout(function () {
+        gameControl.playEasyComputerRound();
+        updateBoard();
+      }, 700);
+    } else if (computerHardMode && !(gameControl.checkIfOver())) {
+      setTimeout(function() {
+        gameControl.playHardComputerRound();
+        updateBoard();
+      }, 700);
     }
     updateBoard();
   }));
@@ -244,15 +269,7 @@ const displayControl = (() => {
     for (let i = 0; i < 9; i++) {
       let token = gameBoard.getTile(tile[i].dataset.row, tile[i].dataset.column);
       if (token) {
-        if (computerMode) {
-          if (token === 'O') {
-            setTimeout(function() {displayToken(token, i);}, 500);
-          } else {
-            displayToken(token, i);
-          }
-        } else {
-          displayToken(token, i);
-        }
+        displayToken(token, i);
       } else {
         tile[i].innerHTML = "";
       }
