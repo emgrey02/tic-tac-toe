@@ -346,7 +346,6 @@ const displayControl = (() => {
   }
   
   const fadeOut = (element) => {
-    console.log(element);
     element.style.transition = "opacity 0.3s linear";
     element.style.opacity = 0;
     element.style.zIndex = 0;
@@ -368,10 +367,10 @@ const displayControl = (() => {
   }
 
   const returnCurrentOpenWindow = () => {
-    return (gameChoice.style.opacity == 1) ? 'gamechoice'
-         : (computerDifficulty.style.opacity == 1) ? 'computerdifficulty'
-         : (computerForm.style.opacity == 1) ? 'computerform'
-         : (playerForm.style.opacity == 1) ? 'playerform'
+    return (gameChoice.style.opacity == 1) ? 'gameChoice'
+         : (computerDifficulty.style.opacity == 1) ? 'computerDifficulty'
+         : (computerForm.style.opacity == 1) ? 'computerForm'
+         : (playerForm.style.opacity == 1) ? 'playerForm'
          : (board.style.opacity == 1) ? 'board'
          : null
   }
@@ -379,17 +378,17 @@ const displayControl = (() => {
   back.addEventListener('click', () => {
     let currentOpenWindow = returnCurrentOpenWindow();
 
-    if (currentOpenWindow === 'gamechoice') {
+    if (currentOpenWindow === 'gameChoice') {
       fadeOut(gameChoice);
       start.disabled = false;
       back.disabled = true;
-    } else if (currentOpenWindow === 'computerform') {
+    } else if (currentOpenWindow === 'computerForm') {
       fadeOut(computerForm);
       fadeIn(gameChoice);
-    } else if (currentOpenWindow === 'computerdifficulty') {
+    } else if (currentOpenWindow === 'computerDifficulty') {
       fadeOut(computerDifficulty);
       fadeIn(computerForm);
-    } else if (currentOpenWindow === 'playerform') {
+    } else if (currentOpenWindow === 'playerForm') {
       fadeOut(playerForm);
       fadeIn(gameChoice);
     } else if (currentOpenWindow === 'board') {
@@ -405,8 +404,11 @@ const displayControl = (() => {
   });
   
   newGame.addEventListener('click', () => {
-    fadeOut(returnCurrentOpenWindow());
+    fadeOut(board);
     fadeIn(gameChoice);
+    start.disabled = true;
+    newGame.disabled = true;
+    reset.disabled = true;
   })
 
   start.addEventListener('click', () => {
@@ -429,6 +431,7 @@ const displayControl = (() => {
   
   easy.addEventListener('click', () => {
     computerEasyMode = true;
+    computerHardMode = false;
     fadeOut(computerDifficulty);
     setTimeout(fadeIn(board), 1000);
     setUpBoard();
@@ -438,6 +441,7 @@ const displayControl = (() => {
 
   hard.addEventListener('click', () => {
     computerHardMode = true;
+    computerEasyMode = false;
     fadeOut(computerDifficulty);
     setTimeout(fadeIn(board), 1000);
     setUpBoard();
