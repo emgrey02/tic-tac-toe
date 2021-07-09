@@ -38,10 +38,10 @@ main {
   height: 100%;
 }
 
-.game-choice {
+.game-choice, .computer-difficulty {
   opacity: 0;
   position: absolute;
-  left: -200%;
+  left: 0;
   right: 0;
   text-align: center;
   display: flex;
@@ -49,7 +49,7 @@ main {
   margin-top: 100px;
 }
 
-.game-choice button {
+.game-choice button, .computer-difficulty button {
   width: 200px;
   padding: 20px;
 }
@@ -57,7 +57,7 @@ main {
 .player-form, .computer-form {
   opacity: 0;
   position: absolute;
-  left: -200%;
+  left: 0;
   right: 0;
   text-align: center;
   display: flex;
@@ -88,7 +88,7 @@ main {
   margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
-  left: -200%;
+  left: 0;
   right: 0;
   text-align: center;
   display: flex;

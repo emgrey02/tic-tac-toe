@@ -1,33 +1,50 @@
 
 const gameBoard = (() => {
-  let _board = [
-    ["", "", ""],
-    ["", "", ""],
-    ["", "", ""]
-  ];
+  let _board = ["", "", "", "", "", "", "", "", ""];
 
-  const getTile = (row, column) => {
-    return _board[row][column];
+  const getTile = (index) => {
+    return _board[index];
   }
 
-  const setTile = (row, column, sign) => {
-    _board[row][column] = sign;
+  const getAiTile = (index, board) => {
+    return board[index];
   }
+
+  const setTile = (index, sign) => {
+    _board[index] = sign;
+  }
+
+  const setAiTile = (index, sign, board) => {
+    board[index] = sign;
+  }
+
+  const getEmptyTiles = (board) => {
+    let optionArray;
+    if (board) {
+      optionArray = board.map((tile, index) => {
+        return (tile === "") ? index : undefined
+      });
+      return optionArray.filter(tile => tile !== undefined);
+    } else {
+      optionArray = _board.map((tile, index) => {
+        return (tile === "") ? index : undefined
+      });
+      return optionArray.filter(tile => tile !== undefined);
+    }
+  };
 
   const reset = () => {
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        _board[i][j] = "";
-      }
+    for (let i = 0; i < 9; i++) {
+      _board[i] = "";
     }
   }
-
-  return { getTile, setTile, reset };
+  
+  return { getTile, getAiTile, setTile, reset, setAiTile, getEmptyTiles };
 })();
 
 const Player = (sign) => {
   this.sign = sign;
-
+  
   const getSign = () => {
     return sign;
   }
@@ -35,56 +52,134 @@ const Player = (sign) => {
   return { getSign };
 };
 
+const minimaxLogic = (() => {
+
+  const _tallyScore = (winner, depth) => {
+    return winner === 'O' ? (100 - depth)
+         : winner === 'X' ? -100
+         : winner === 'tie' ? 0
+         : null
+  }
+  
+  const findBestMove = () => {
+    let testBoard = gameControl.getCurrentBoard();
+    let emptyTiles = gameBoard.getEmptyTiles(testBoard);
+    let bestMoveIndex;
+    let bestMoveScore = -1000;
+    let moveScore;
+
+    emptyTiles.forEach((index) => {
+      testBoard[index] = 'O';
+      moveScore = _minimax(testBoard, 0, -1000, 1000, false);
+      testBoard[index] = "";
+      if (moveScore > bestMoveScore) {
+        bestMoveScore = moveScore;
+        bestMoveIndex = index;
+      }
+    });
+    return bestMoveIndex;
+  }
+  
+  const _minimax = (board, depth, alpha, beta, isMax) => {
+    let roundResult = gameControl.checkWinner(board);
+    if (roundResult !== false) return _tallyScore(roundResult, depth);
+ 
+     // If it's not an ending state, continue minimax recursion
+    let emptyTiles = gameBoard.getEmptyTiles(board);
+    let moveScore;
+
+    if (isMax) {
+       // Maximizing turn
+      let bestMoveScore = -1000;
+      emptyTiles.some((index) => {
+        board[index] = 'O';
+        moveScore = _minimax(board, depth + 1, alpha, beta, false);
+        board[index] = "";
+        bestMoveScore = Math.max(bestMoveScore, moveScore);
+        // Alpha-beta pruning
+        alpha = Math.max(alpha, bestMoveScore);
+        if (alpha >= beta) return true; // Prune this branch (stops evaluating other empty squares)
+       });
+       return bestMoveScore;
+    } else {
+       // Minimizing turn
+      let bestMoveScore = 1000;
+      emptyTiles.some((index) => {
+        board[index] = 'X';
+        moveScore = _minimax(board, depth + 1, alpha, beta, true);
+        board[index] = "";
+        bestMoveScore = Math.min(bestMoveScore, moveScore);
+        // Alpha-beta pruning
+        beta = Math.min(beta, bestMoveScore);
+        if (alpha >= beta) return true; // Prune this branch (stops evaluating other empty squares)
+      });
+      return bestMoveScore;
+    }
+  }
+  return { findBestMove };
+
+})();
+
 const gameControl = (() => {
   let playerX = Player('X');
   let playerO = Player('O');
   let round = 1;
   let endGame = false;
   
-  const playRound = (place) => {
-    gameBoard.setTile(place.dataset.row, place.dataset.column, getCurrentSign());
+  const playHumanRound = (place) => {
+    gameBoard.setTile(place.dataset.key, getCurrentSign());
     finishRound();
   };
+
+  const getRound = () => {
+    return round;
+  }
   
-  const playEasyComputerRound = () => {
-    let optionArray = []
-    for (let i=0; i<3; i++) {
-      for (let j=0; j<3; j++) {
-        if (gameBoard.getTile(i,j) === "") {
-          optionArray.push([i,j]);
-        }
-      }
-    }
-    let options = optionArray.length;
+  const playEasyComputerTurn = () => {
+    let options = gameBoard.getEmptyTiles();
+    
     let index = 0;
-    if (optionArray.length > 1) {
-      index = Math.floor(Math.random() * (optionArray.length - 1));
-    } else if (optionArray.length === 1) {
+    if (options.length > 1) {
+      index = Math.floor(Math.random() * (options.length - 1));
+    } else if (options.length === 1) {
       index = Math.floor(Math.random() * 1);
     } else {
       finishRound();
       return;
     }
-    gameBoard.setTile(optionArray[index][0], optionArray[index][1], getCurrentSign());
+    gameBoard.setTile(options[index], getCurrentSign());
     displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
     finishRound();
   };
-  
+
+  const playHardComputerTurn = () => {
+    let index = minimaxLogic.findBestMove();
+    gameBoard.setTile(index, getCurrentSign());
+    displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
+    finishRound();
+  };
+
   const finishRound = () => {
     if (checkWinner()) {
-      displayControl.setFinalMessage(`${getCurrentPlayer()}`);
-      endGame = true;
-      return;
-    }
-    
-    if (round > 8) {
-      displayControl.setFinalMessage('draw');
+      if (checkWinner() === 'tie') {
+        displayControl.setFinalMessage('draw');
+      } else {
+        displayControl.setFinalMessage(`${getCurrentPlayer()}`);
+      }
       endGame = true;
       return;
     }
     
     round++;
     displayControl.setMessage(`${getCurrentPlayer()}'s turn`);
+  }
+
+  const getCurrentBoard = () => {
+    let currentBoard =[];
+    for (let i=0; i<9; i++) {
+      currentBoard.push(gameBoard.getTile(i));
+    }
+    return currentBoard;
   }
   
   const getCurrentSign = () => {
@@ -104,43 +199,92 @@ const gameControl = (() => {
     }
   }
 
-  const checkWinner = () => {
-    //check rows
-    for (let i=0; i<3; i++) {
-      let row=[];
-      for (let j=0; j<3; j++) {
-        row.push(gameBoard.getTile(i, j));
+  const _checkRowWin = (board) => {
+    for (let i = 0; i < 3; i++) {
+      let row = []
+      for (let j = i * 3; j < i * 3 + 3; j++) {
+        if (board) {
+          row.push(gameBoard.getAiTile(j, board));
+        } else {
+          row.push(gameBoard.getTile(j));
+        }
       }
 
-      if (row.every(tile => tile === 'X') || (row.every(tile => tile === 'O'))) {
-        return true;
+      if (row.every(field => field == 'X') || row.every(field => field == 'O')) {
+        return [true, row[0]];
       }
     }
-
-    //check columns
-    for (let i=0; i<3; i++) {
-      let column=[];
-      for (let j=0; j<3; j++) {
-        column.push(gameBoard.getTile(j, i));
-      }
-
-      if (column.every(tile => tile === 'X') || (column.every(tile => tile === 'O'))) {
-        return true;
-      }
-    }
-
-    //check diagonals
-    let diagonal1 = [gameBoard.getTile(0, 0), gameBoard.getTile(1,1), gameBoard.getTile(2,2)];
-    let diagonal2 = [gameBoard.getTile(0,2), gameBoard.getTile(1,1), gameBoard.getTile(2,0)];
-
-    if (diagonal1.every(tile => tile === 'X') || diagonal1.every(tile => tile === 'O')) {
-      return true;
-    }
-    if (diagonal2.every(tile => tile === 'X') || diagonal2.every(tile => tile === 'O')) {
-      return true;
-    }
-
     return false;
+  }
+
+  const _checkColumnWin = (board) => {
+    for (let i = 0; i < 3; i++) {
+      let column = []
+      for (let j = 0; j < 3; j++) {
+        if (board) {
+          column.push(gameBoard.getAiTile(i + 3 * j, board));
+        } else {
+          column.push(gameBoard.getTile(i + 3 * j));
+        }
+      }
+
+      if (column.every(field => field == 'X') || column.every(field => field == 'O')) {
+          return [true, column[0]];
+      }
+    }
+    return false;
+  }
+
+  const _checkDiagonalWin = (board) => {
+    let diagonal1;
+    let diagonal2;
+
+    if (board) {
+      diagonal1 = [gameBoard.getAiTile(0, board), gameBoard.getAiTile(4, board), gameBoard.getAiTile(8, board)];
+      diagonal2 = [gameBoard.getAiTile(6, board), gameBoard.getAiTile(4, board), gameBoard.getAiTile(2, board)];
+    } else {
+      diagonal1 = [gameBoard.getTile(0), gameBoard.getTile(4), gameBoard.getTile(8)];
+      diagonal2 = [gameBoard.getTile(6), gameBoard.getTile(4), gameBoard.getTile(2)];
+    }
+
+    if (diagonal1.every(field => field == 'X') || diagonal1.every(field => field == 'O')) {
+      return [true, diagonal1[0]];
+    }
+    else if (diagonal2.every(field => field == 'X') || diagonal2.every(field => field == 'O')) {
+      return [true, diagonal2[0]];
+    }
+    return false;
+  }
+
+  const _checkForTie = (board) => {
+    if (board) {
+      return board.every(tile => tile !== "") ? 'tie' : false
+    } else {
+      let currentBoard = getCurrentBoard();
+      return currentBoard.every(tile => tile !== "") ? 'tie' : false
+    }
+    
+  }
+
+  const checkWinner = (board) => {
+    let a, b, c, d;
+    if (board) {
+      a = _checkRowWin(board);
+      b = _checkColumnWin(board);
+      c = _checkDiagonalWin(board);
+      d = _checkForTie(board);
+    } else {
+      a = _checkRowWin();
+      b = _checkColumnWin();
+      c = _checkDiagonalWin();
+      d = _checkForTie();
+    }
+
+    return a[0] ? a[1]
+          : b[0] ? b[1]
+          : c[0] ? c[1]
+          : d === 'tie' ? 'tie'
+          : false;
   };
 
   const reset = () => {
@@ -149,28 +293,51 @@ const gameControl = (() => {
     displayControl.setMessage(`${getCurrentPlayer()} starts!!`);
   }
 
-  const checkIfOver = () => endGame;
+  const checkIfOver = () => {
+    return endGame;
+  }
   
-  return { reset, checkIfOver, playRound, playEasyComputerRound, getCurrentPlayer, getCurrentSign };
+  return { reset, 
+          checkIfOver, 
+          playHumanRound, 
+          playEasyComputerTurn, 
+          playHardComputerTurn,
+          getCurrentPlayer, 
+          getCurrentSign, 
+          getCurrentBoard,
+          getRound,
+          checkWinner 
+        };
 })();
 
 const displayControl = (() => {
+  //game board
+  let board = document.querySelector('#game-board');
   let tile = document.querySelectorAll('.tile');
+
+  //message
   let message = document.querySelector('#message');
+
+  //buttons
   let reset = document.querySelector('#reset');
   let start = document.querySelector('#start');
   let submit = document.querySelectorAll('.submit');
-  let board = document.querySelector('#game-board');
-  let gameChoice = document.querySelector('.game-choice');
   let computerButton = document.querySelector('#computer');
   let playerButton = document.querySelector('#player');
-  let computer = document.querySelector('.computer');
-  let multiplayer = document.querySelector('.multiplayer');
-  let computerForm = document.querySelector('.computer-form');
-  let playerForm = document.querySelector('.player-form');
   let easy = document.querySelector('#easy');
   let hard = document.querySelector('#hard');
+
+  //windows
+  let gameChoice = document.querySelector('.game-choice');
+  let computerForm = document.querySelector('.computer-form');
+  let playerForm = document.querySelector('.player-form');
+
+  //forms
+  let computer = document.querySelector('.computer');
+  let multiplayer = document.querySelector('.multiplayer');
   let computerDifficulty = document.querySelector('.computer-difficulty');
+
+  //variables
   let computerEasyMode = false;
   let computerHardMode = false;
 
@@ -223,6 +390,13 @@ const displayControl = (() => {
     setUpBoard();
   })
 
+  hard.addEventListener('click', () => {
+    computerHardMode = true;
+    fadeOut(computerDifficulty);
+    setTimeout(fadeIn(board), 1000);
+    setUpBoard();
+  })
+
   
   submit.forEach(button => button.addEventListener('click', (e) => {
     e.preventDefault();
@@ -243,20 +417,22 @@ const displayControl = (() => {
   tile.forEach(place => place.addEventListener('click', (e) => {
     if (gameControl.checkIfOver() || e.target.localName == "img" || e.target.innerHTML !== "") return;
     
-    gameControl.playRound(place);
-
+    gameControl.playHumanRound(place);
+    
     if (computerEasyMode && !(gameControl.checkIfOver())) {
       setTimeout(function () {
-        gameControl.playEasyComputerRound();
+        gameControl.playEasyComputerTurn();
         updateBoard();
       }, 700);
     } else if (computerHardMode && !(gameControl.checkIfOver())) {
       setTimeout(function() {
-        gameControl.playHardComputerRound();
+        gameControl.playHardComputerTurn();
         updateBoard();
       }, 700);
     }
+    
     updateBoard();
+
   }));
   
   reset.addEventListener('click', (e) => {
@@ -267,7 +443,7 @@ const displayControl = (() => {
 
   const updateBoard = () => {
     for (let i = 0; i < 9; i++) {
-      let token = gameBoard.getTile(tile[i].dataset.row, tile[i].dataset.column);
+      let token = gameBoard.getTile(i);
       if (token) {
         displayToken(token, i);
       } else {
