@@ -39,6 +39,7 @@ header .buttons {
 
 button, .player-form form input.submit,
 .computer-form form input.submit {
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: center;
