@@ -83,26 +83,25 @@ const minimaxLogic = (() => {
   const _minimax = (board, depth, alpha, beta, isMax) => {
     let roundResult = gameControl.checkWinner(board);
     if (roundResult !== false) return _tallyScore(roundResult, depth);
- 
-     // If it's not an ending state, continue minimax recursion
+
     let emptyTiles = gameBoard.getEmptyTiles(board);
     let moveScore;
 
     if (isMax) {
-       // Maximizing turn
+
       let bestMoveScore = -1000;
       emptyTiles.some((index) => {
         board[index] = 'O';
         moveScore = _minimax(board, depth + 1, alpha, beta, false);
         board[index] = "";
         bestMoveScore = Math.max(bestMoveScore, moveScore);
-        // Alpha-beta pruning
         alpha = Math.max(alpha, bestMoveScore);
-        if (alpha >= beta) return true; // Prune this branch (stops evaluating other empty squares)
+        if (alpha >= beta) return true; 
        });
        return bestMoveScore;
+
     } else {
-       // Minimizing turn
+
       let bestMoveScore = 1000;
       emptyTiles.some((index) => {
         board[index] = 'X';
@@ -111,7 +110,7 @@ const minimaxLogic = (() => {
         bestMoveScore = Math.min(bestMoveScore, moveScore);
         // Alpha-beta pruning
         beta = Math.min(beta, bestMoveScore);
-        if (alpha >= beta) return true; // Prune this branch (stops evaluating other empty squares)
+        if (alpha >= beta) return true; 
       });
       return bestMoveScore;
     }
@@ -130,10 +129,6 @@ const gameControl = (() => {
     gameBoard.setTile(place.dataset.key, getCurrentSign());
     finishRound();
   };
-
-  const getRound = () => {
-    return round;
-  }
   
   const playEasyComputerTurn = () => {
     let options = gameBoard.getEmptyTiles();
@@ -263,7 +258,6 @@ const gameControl = (() => {
       let currentBoard = getCurrentBoard();
       return currentBoard.every(tile => tile !== "") ? 'tie' : false
     }
-    
   }
 
   const checkWinner = (board) => {
@@ -305,7 +299,6 @@ const gameControl = (() => {
           getCurrentPlayer, 
           getCurrentSign, 
           getCurrentBoard,
-          getRound,
           checkWinner 
         };
 })();
@@ -369,6 +362,8 @@ const displayControl = (() => {
   }
 
   start.addEventListener('click', () => {
+    computerEasyMode = false;
+    computerHardMode = false;
     fadeOut(board);
     fadeIn(gameChoice);
   });
