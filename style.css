@@ -1,6 +1,9 @@
+* {
+  font-family: 'Amiri', serif;
+  
+}
 body {
   margin: 0;
-  box-sizing: border-box;
   background: rgb(136, 83, 136);
 }
 
@@ -13,12 +16,14 @@ header {
 }
 
 header h1 {
-  width: 200px;
+  font-family: 'Zen Tokyo Zoo', cursive;
+  font-size: 60px;
+  color: white;
+  width: auto;
   text-align: center;
-  background: rgba(246, 255, 122, 0.562);
+  box-shadow: 5px 5px 5px rgb(77, 18, 77), -5px -5px 10px rgb(158, 101, 149);
   padding: 30px;
   border-radius: 1rem;
-  border: solid 5px black;
 }
 
 button:disabled {
@@ -29,13 +34,29 @@ button:disabled {
 header .buttons {
   display: flex;
   justify-content: space-around;
+  align-content: center;
 }
 
-button {
+button, .player-form form input.submit,
+.computer-form form input.submit {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  box-sizing: border-box;
   font-size: 20px;
   padding: 5px;
-  width: 100px;
+  width: 120px;
   margin: 10px;
+  background: rgba(2, 134, 155, 0.822);
+  box-shadow: 5px 5px rgba(95, 151, 62, 0.795);
+  border: none;
+}
+
+button:hover, .player-form form input.submit:hover,
+.computer-form form input.submit:hover {
+  box-shadow: none;
+  transform: translate(5px, 5px);
 }
 
 main {
@@ -43,7 +64,8 @@ main {
   height: 100%;
 }
 
-.game-choice, .computer-difficulty {
+.game-choice,
+.computer-difficulty {
   opacity: 0;
   position: absolute;
   left: 0;
@@ -54,12 +76,14 @@ main {
   margin-top: 100px;
 }
 
-.game-choice button, .computer-difficulty button {
+.game-choice button,
+.computer-difficulty button {
   width: 200px;
   padding: 20px;
 }
 
-.player-form, .computer-form {
+.player-form,
+.computer-form {
   opacity: 0;
   position: absolute;
   left: 0;
@@ -70,20 +94,26 @@ main {
   align-items: center;
 }
 
-.player-form form, .computer-form form {
+.player-form form,
+.computer-form form {
   margin: 20px 0 20px 0;
   background: rgba(255, 255, 255, 0.644);
   padding: 30px;
   border-radius: 1rem;
 }
 
-.player-form form label, .computer-form form label {
+.player-form form label,
+.computer-form form label {
   line-height: 3;
+  font-size: 20px;
 }
 
-.player-form form input, .computer-form form input {
+.player-form form input,
+.computer-form form input {
   margin-bottom: 30px;
   line-height: 2;
+  font-size: 20px;
+  width: 200px;
 }
 
 #game-board {
@@ -102,12 +132,12 @@ main {
 }
 
 #message {
-  background-color: rgba(255, 255, 255, 0.644);
+  color: white;
+  background-color:rgba(95, 151, 62, 0.795);
   margin: 40px;
-  padding: 20px;
-  border-radius: 1rem;
-  border: solid 3px black;
-  font-size: 24px;
+  padding: 10px;
+  width: max-content;
+  font-size: 30px;
 }
 
 .grid-container {
