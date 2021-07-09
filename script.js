@@ -1,4 +1,3 @@
-
 const gameBoard = (() => {
   let _board = ["", "", "", "", "", "", "", "", ""];
 
@@ -319,6 +318,8 @@ const displayControl = (() => {
   let playerButton = document.querySelector('#player');
   let easy = document.querySelector('#easy');
   let hard = document.querySelector('#hard');
+  let newGame = document.querySelector('#new-game');
+  let back = document.querySelector('#back');
 
   //windows
   let gameChoice = document.querySelector('.game-choice');
@@ -334,6 +335,10 @@ const displayControl = (() => {
   let computerEasyMode = false;
   let computerHardMode = false;
 
+  reset.disabled = true;
+  newGame.disabled = true;
+  back.disabled = true;
+
   const fadeIn = (element) => {
     element.style.transition = "opacity 1.8s ease-out";
     element.style.opacity = 1;
@@ -341,6 +346,7 @@ const displayControl = (() => {
   }
   
   const fadeOut = (element) => {
+    console.log(element);
     element.style.transition = "opacity 0.3s linear";
     element.style.opacity = 0;
     element.style.zIndex = 0;
@@ -361,11 +367,54 @@ const displayControl = (() => {
     setMessage(`${gameControl.getCurrentPlayer()} starts!`);
   }
 
+  const returnCurrentOpenWindow = () => {
+    return (gameChoice.style.opacity == 1) ? 'gamechoice'
+         : (computerDifficulty.style.opacity == 1) ? 'computerdifficulty'
+         : (computerForm.style.opacity == 1) ? 'computerform'
+         : (playerForm.style.opacity == 1) ? 'playerform'
+         : (board.style.opacity == 1) ? 'board'
+         : null
+  }
+
+  back.addEventListener('click', () => {
+    let currentOpenWindow = returnCurrentOpenWindow();
+
+    if (currentOpenWindow === 'gamechoice') {
+      fadeOut(gameChoice);
+      start.disabled = false;
+      back.disabled = true;
+    } else if (currentOpenWindow === 'computerform') {
+      fadeOut(computerForm);
+      fadeIn(gameChoice);
+    } else if (currentOpenWindow === 'computerdifficulty') {
+      fadeOut(computerDifficulty);
+      fadeIn(computerForm);
+    } else if (currentOpenWindow === 'playerform') {
+      fadeOut(playerForm);
+      fadeIn(gameChoice);
+    } else if (currentOpenWindow === 'board') {
+      fadeOut(board);
+      newGame.disabled = true;
+      reset.disabled = true;
+      if (computerEasyMode || computerHardMode) {
+        fadeIn(computerDifficulty);
+      } else {
+        fadeIn(playerForm);
+      }
+    }    
+  });
+  
+  newGame.addEventListener('click', () => {
+    fadeOut(returnCurrentOpenWindow());
+    fadeIn(gameChoice);
+  })
+
   start.addEventListener('click', () => {
     computerEasyMode = false;
     computerHardMode = false;
-    fadeOut(board);
     fadeIn(gameChoice);
+    start.disabled = true;
+    back.disabled = false;
   });
 
   computerButton.addEventListener('click', () => {
@@ -383,6 +432,8 @@ const displayControl = (() => {
     fadeOut(computerDifficulty);
     setTimeout(fadeIn(board), 1000);
     setUpBoard();
+    reset.disabled = false;
+    newGame.disabled = false;
   })
 
   hard.addEventListener('click', () => {
@@ -390,6 +441,8 @@ const displayControl = (() => {
     fadeOut(computerDifficulty);
     setTimeout(fadeIn(board), 1000);
     setUpBoard();
+    reset.disabled = false;
+    newGame.disabled = false;
   })
 
   
@@ -402,6 +455,8 @@ const displayControl = (() => {
       fadeOut(playerForm);
       setTimeout(fadeIn(board), 1000);
       setUpBoard();
+      reset.disabled = false;
+      newGame.disabled = false;
     } else {
       fadeOut(computerForm);
       fadeIn(computerDifficulty); 

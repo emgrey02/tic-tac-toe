@@ -21,6 +21,11 @@ header h1 {
   border: solid 5px black;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  display: none;
+}
+
 header .buttons {
   display: flex;
   justify-content: space-around;
@@ -29,7 +34,7 @@ header .buttons {
 button {
   font-size: 20px;
   padding: 5px;
-  width: min-content;
+  width: 100px;
   margin: 10px;
 }
 
@@ -59,7 +64,6 @@ main {
   position: absolute;
   left: 0;
   right: 0;
-  text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
