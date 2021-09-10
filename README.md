@@ -5,6 +5,9 @@ I recreate the game of tic-tac-toe to be played through the browser.
 ## Demo
 ![gif of tic-tac-toe game](/tic-tac-toe.gif)
 
+## Live Preview
+[https://emgrey02.github.io/tic-tac-toe](https://emgrey02.github.io/tic-tac-toe)
+
 ## Languages used
   - HTML
   - CSS
