@@ -1,6 +1,7 @@
 # Tic-Tac-Toe
 ### a project from [The Odin Project](https://theodinproject.com)'s Javascript curriculum
-I recreate the game of tic-tac-toe to be played through the browser.
+I recreate the game of tic-tac-toe to be played through the browser. The user has the option
+to play against the computer or another player. 
 
 ## Demo
 ![gif of tic-tac-toe game](/tic-tac-toe.gif)
